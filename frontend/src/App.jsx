@@ -158,7 +158,10 @@ function App() {
         <div className="container">
           <div className="header-main">
             <div>
-              <h1>🌍 JSON Translator</h1>
+              <h1>
+                <span className="emoji">🌍</span>
+                <span className="title-text">JSON Translator</span>
+              </h1>
               <p>Traduza seus arquivos JSON com IA ou Google Translate</p>
             </div>
             <nav className="header-nav">
