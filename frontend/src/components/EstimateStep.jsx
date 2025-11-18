@@ -10,6 +10,8 @@ const EstimateStep = ({ estimate, onStart, onBack, loading }) => {
     return `${hours}h ${minutes}m`
   }
 
+  const isGoogleTranslate = estimate.method === 'google' || estimate.model === 'Google Translate'
+
   return (
     <div className="estimate-step">
       <div className="estimate-header">
@@ -27,21 +29,25 @@ const EstimateStep = ({ estimate, onStart, onBack, loading }) => {
           </div>
         </div>
 
-        <div className="estimate-card">
-          <TrendingUp size={24} />
-          <div>
-            <p className="estimate-label">Batches Estimados</p>
-            <p className="estimate-value">{estimate.estimated_batches}</p>
+        {!isGoogleTranslate && (
+          <div className="estimate-card">
+            <TrendingUp size={24} />
+            <div>
+              <p className="estimate-label">Batches Estimados</p>
+              <p className="estimate-value">{estimate.estimated_batches}</p>
+            </div>
           </div>
-        </div>
+        )}
 
-        <div className="estimate-card highlight cost">
-          <DollarSign size={24} />
-          <div>
-            <p className="estimate-label">Custo Estimado</p>
-            <p className="estimate-value">${estimate.estimated_cost_usd.toFixed(6)}</p>
+        {!isGoogleTranslate && (
+          <div className="estimate-card highlight cost">
+            <DollarSign size={24} />
+            <div>
+              <p className="estimate-label">Custo Estimado</p>
+              <p className="estimate-value">${estimate.estimated_cost_usd.toFixed(6)}</p>
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="estimate-card highlight time">
           <Clock size={24} />
@@ -56,33 +62,58 @@ const EstimateStep = ({ estimate, onStart, onBack, loading }) => {
         <h3>Detalhes da Estimativa</h3>
         <div className="details-grid">
           <div className="detail-item">
-            <span className="detail-label">Modelo:</span>
-            <span className="detail-value">{estimate.model}</span>
+            <span className="detail-label">Método:</span>
+            <span className="detail-value">{isGoogleTranslate ? 'Google Translate' : 'OpenAI'}</span>
           </div>
-          <div className="detail-item">
-            <span className="detail-label">Batch Size:</span>
-            <span className="detail-value">{estimate.batch_size}</span>
-          </div>
-          <div className="detail-item">
-            <span className="detail-label">Batches Paralelos:</span>
-            <span className="detail-value">{estimate.parallel}</span>
-          </div>
-          <div className="detail-item">
-            <span className="detail-label">Tokens Input (est.):</span>
-            <span className="detail-value">{estimate.estimated_tokens_input.toLocaleString()}</span>
-          </div>
-          <div className="detail-item">
-            <span className="detail-label">Tokens Output (est.):</span>
-            <span className="detail-value">{estimate.estimated_tokens_output.toLocaleString()}</span>
-          </div>
+          {!isGoogleTranslate && (
+            <>
+              <div className="detail-item">
+                <span className="detail-label">Modelo:</span>
+                <span className="detail-value">{estimate.model}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Batch Size:</span>
+                <span className="detail-value">{estimate.batch_size}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Batches Paralelos:</span>
+                <span className="detail-value">{estimate.parallel}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Tokens Input (est.):</span>
+                <span className="detail-value">{estimate.estimated_tokens_input.toLocaleString()}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Tokens Output (est.):</span>
+                <span className="detail-value">{estimate.estimated_tokens_output.toLocaleString()}</span>
+              </div>
+            </>
+          )}
+          {isGoogleTranslate && (
+            <div className="detail-item">
+              <span className="detail-label">Nota:</span>
+              <span className="detail-value">Google Translate é gratuito, mas pode ser mais lento devido a rate limits</span>
+            </div>
+          )}
         </div>
       </div>
+
+      {isGoogleTranslate && (
+        <div className="alert error" style={{ marginBottom: '1.5rem' }}>
+          <span>⚠️ Google Translate ainda não está implementado na API. Por favor, use o método OpenAI.</span>
+        </div>
+      )}
 
       <div className="btn-group">
         <button className="btn btn-secondary" onClick={onBack} disabled={loading}>
           Voltar
         </button>
-        <button className="btn btn-success" onClick={onStart} disabled={loading}>
+        <button 
+          className="btn btn-success" 
+          onClick={onStart} 
+          disabled={loading || isGoogleTranslate}
+          title={isGoogleTranslate ? 'Google Translate ainda não está implementado' : ''}
+        >
           {loading ? 'Iniciando...' : 'Iniciar Tradução'}
         </button>
       </div>

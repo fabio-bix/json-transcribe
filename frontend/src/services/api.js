@@ -25,6 +25,7 @@ export const uploadJSON = async (file) => {
 export const estimateTranslation = async (jsonData, config) => {
   const response = await api.post('/api/translate/estimate', {
     target_language: config.targetLanguage,
+    method: config.method,
     model: config.model,
     batch_size: config.batchSize,
     parallel: config.parallel,

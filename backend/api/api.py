@@ -57,6 +57,7 @@ class TranslationRequest(BaseModel):
 
 class EstimateRequest(BaseModel):
     target_language: str
+    method: str = Field("openai", description="Método de tradução: 'openai' ou 'google'")
     model: Optional[str] = DEFAULT_MODEL
     batch_size: Optional[int] = DEFAULT_BATCH_SIZE
     parallel: Optional[int] = DEFAULT_PARALLEL
@@ -140,12 +141,26 @@ async def upload_json(file: UploadFile = File(...)):
 async def estimate(estimate_req: EstimateRequest):
     
     try:
+        if estimate_req.method not in ["openai", "google"]:
+            raise HTTPException(status_code=400, detail="Método deve ser 'openai' ou 'google'")
+        
+        # Validar limites
+        batch_size = estimate_req.batch_size or DEFAULT_BATCH_SIZE
+        parallel = estimate_req.parallel or DEFAULT_PARALLEL
+        
+        if batch_size < 1 or batch_size > 250:
+            raise HTTPException(status_code=400, detail="Tamanho do batch deve estar entre 1 e 250")
+        
+        if parallel < 1 or parallel > 10:
+            raise HTTPException(status_code=400, detail="Batches paralelos deve estar entre 1 e 10")
+        
         estimate_result = estimate_translation(
             json_data=estimate_req.json_data,
             target_language=estimate_req.target_language,
+            method=estimate_req.method,
             model=estimate_req.model or DEFAULT_MODEL,
-            batch_size=estimate_req.batch_size or DEFAULT_BATCH_SIZE,
-            parallel=estimate_req.parallel or DEFAULT_PARALLEL,
+            batch_size=batch_size,
+            parallel=parallel,
         )
         
         return {
@@ -153,6 +168,8 @@ async def estimate(estimate_req: EstimateRequest):
             **estimate_result,
         }
     
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao estimar: {str(e)}")
 
@@ -170,7 +187,20 @@ async def start_translation(
         
 
         if translation_req.method == "google":
-            raise HTTPException(status_code=501, detail="Google Translate ainda não implementado na API")
+            raise HTTPException(
+                status_code=501, 
+                detail="Google Translate ainda não está implementado na API. Por favor, use o método OpenAI ou aguarde uma atualização futura."
+            )
+        
+        # Validar limites
+        batch_size = translation_req.batch_size or DEFAULT_BATCH_SIZE
+        parallel = translation_req.parallel or DEFAULT_PARALLEL
+        
+        if batch_size < 1 or batch_size > 250:
+            raise HTTPException(status_code=400, detail="Tamanho do batch deve estar entre 1 e 250")
+        
+        if parallel < 1 or parallel > 10:
+            raise HTTPException(status_code=400, detail="Batches paralelos deve estar entre 1 e 10")
         
 
         job = create_job()
@@ -185,8 +215,8 @@ async def start_translation(
             target_language=translation_req.target_language,
             job_id=job.job_id,
             model=translation_req.model or DEFAULT_MODEL,
-            batch_size=translation_req.batch_size or DEFAULT_BATCH_SIZE,
-            parallel=translation_req.parallel or DEFAULT_PARALLEL,
+            batch_size=batch_size,
+            parallel=parallel,
         )
         
         return {

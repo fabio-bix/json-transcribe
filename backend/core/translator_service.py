@@ -91,6 +91,7 @@ def validate_json(data: Any) -> Tuple[bool, Optional[str]]:
 def estimate_translation(
     json_data: Dict[str, Any],
     target_language: str,
+    method: str = "openai",
     model: str = DEFAULT_MODEL,
     batch_size: int = DEFAULT_BATCH_SIZE,
     parallel: int = DEFAULT_PARALLEL,
@@ -108,36 +109,60 @@ def estimate_translation(
     total_strings = len(all_strings)
     
 
-    estimated_chars = sum(len(str(e["value"])) for e in all_strings)
-    estimated_tokens_input = estimated_chars // 4
-    estimated_tokens_output = int(estimated_tokens_input * 1.2)
-    
-
-    estimated_cost = 0.0
-    if model in MODEL_PRICING:
-        pricing = MODEL_PRICING[model]
-        input_cost = (estimated_tokens_input / 1_000_000) * pricing["input"]
-        output_cost = (estimated_tokens_output / 1_000_000) * pricing["output"]
-        estimated_cost = input_cost + output_cost
-    
-
     num_batches = (total_strings + batch_size - 1) // batch_size if total_strings > 0 else 0
-    estimated_time_per_batch = 3.0
-
-    estimated_time_seconds = (num_batches / parallel) * estimated_time_per_batch
     
-    return {
-        "total_strings": total_strings,
-        "total_entries": len(flat_data),
-        "estimated_batches": num_batches,
-        "estimated_tokens_input": estimated_tokens_input,
-        "estimated_tokens_output": estimated_tokens_output,
-        "estimated_cost_usd": round(estimated_cost, 6),
-        "estimated_time_seconds": int(estimated_time_seconds),
-        "model": model,
-        "batch_size": batch_size,
-        "parallel": parallel,
-    }
+    if method == "google":
+        # Google Translate: sem custo, tempo baseado em strings (mais lento, sem paralelismo real)
+        # Google Translate tem rate limits, estimamos ~0.5-1 segundo por string
+        estimated_time_per_string = 0.8
+        estimated_time_seconds = int(total_strings * estimated_time_per_string)
+        
+        return {
+            "total_strings": total_strings,
+            "total_entries": len(flat_data),
+            "estimated_batches": num_batches,
+            "estimated_tokens_input": 0,
+            "estimated_tokens_output": 0,
+            "estimated_cost_usd": 0.0,
+            "estimated_time_seconds": estimated_time_seconds,
+            "method": method,
+            "model": "Google Translate",
+            "batch_size": batch_size,
+            "parallel": 1,  # Google Translate não suporta paralelismo real
+        }
+    else:
+        # OpenAI: cálculo com tokens e custo
+        estimated_chars = sum(len(str(e["value"])) for e in all_strings)
+        estimated_tokens_input = estimated_chars // 4
+        estimated_tokens_output = int(estimated_tokens_input * 1.2)
+        
+
+        estimated_cost = 0.0
+        if model in MODEL_PRICING:
+            pricing = MODEL_PRICING[model]
+            input_cost = (estimated_tokens_input / 1_000_000) * pricing["input"]
+            output_cost = (estimated_tokens_output / 1_000_000) * pricing["output"]
+            estimated_cost = input_cost + output_cost
+        
+
+        # Tempo estimado: cada batch leva tempo, dividido pelo paralelismo
+        # Tempo por batch varia, mas estimamos ~5-10 segundos por batch dependendo do tamanho
+        estimated_time_per_batch = max(5.0, batch_size * 0.05)  # Mínimo 5s, ou 0.05s por string
+        estimated_time_seconds = int((num_batches * estimated_time_per_batch) / parallel)
+        
+        return {
+            "total_strings": total_strings,
+            "total_entries": len(flat_data),
+            "estimated_batches": num_batches,
+            "estimated_tokens_input": estimated_tokens_input,
+            "estimated_tokens_output": estimated_tokens_output,
+            "estimated_cost_usd": round(estimated_cost, 6),
+            "estimated_time_seconds": estimated_time_seconds,
+            "method": method,
+            "model": model,
+            "batch_size": batch_size,
+            "parallel": parallel,
+        }
 
 
 async def translate_json_async(

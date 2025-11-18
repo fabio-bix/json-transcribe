@@ -27,6 +27,18 @@ const ConfigStep = ({ config, onConfigChange, onNext, onBack, loading }) => {
   }, [])
 
   const handleChange = (field, value) => {
+    // Para campos numéricos, aplicar limites em tempo real
+    if (field === 'batchSize' || field === 'parallel') {
+      const numValue = parseInt(value)
+      if (!isNaN(numValue)) {
+        if (field === 'batchSize') {
+          value = Math.min(Math.max(1, numValue), 250)
+        } else if (field === 'parallel') {
+          value = Math.min(Math.max(1, numValue), 10)
+        }
+      }
+    }
+    
     onConfigChange({
       ...config,
       [field]: value,
@@ -48,7 +60,6 @@ const ConfigStep = ({ config, onConfigChange, onNext, onBack, loading }) => {
         </div>
       ) : (
         <div className="config-form">
-          {/* Método de Tradução */}
           <div className="form-group">
             <label>Método de Tradução</label>
             <div className="radio-group">
@@ -75,7 +86,6 @@ const ConfigStep = ({ config, onConfigChange, onNext, onBack, loading }) => {
             </div>
           </div>
 
-          {/* Modelo (apenas se OpenAI) */}
           {config.method === 'openai' && (
             <div className="form-group">
               <label>Modelo OpenAI</label>
@@ -93,7 +103,6 @@ const ConfigStep = ({ config, onConfigChange, onNext, onBack, loading }) => {
             </div>
           )}
 
-          {/* Idioma de Destino */}
           <div className="form-group">
             <label>
               Idioma de Destino
@@ -112,34 +121,46 @@ const ConfigStep = ({ config, onConfigChange, onNext, onBack, loading }) => {
             </select>
           </div>
 
-          {/* Batch Size */}
           <div className="form-group">
             <label>
               Tamanho do Batch
-              <span className="hint">(recomendado: 100-200)</span>
+              <span className="hint">(máximo: 250, recomendado: 100-200)</span>
             </label>
             <input
               type="number"
               min="1"
-              max="200"
+              max="250"
               value={config.batchSize}
-              onChange={(e) => handleChange('batchSize', parseInt(e.target.value))}
+              onChange={(e) => handleChange('batchSize', e.target.value)}
+              onBlur={(e) => {
+                const value = parseInt(e.target.value) || 1
+                const clamped = Math.min(Math.max(1, value), 250)
+                if (value !== clamped) {
+                  handleChange('batchSize', clamped)
+                }
+              }}
               className="form-input"
             />
           </div>
 
-          {/* Parallel Batches */}
           <div className="form-group">
             <label>
               Batches Paralelos
-              <span className="hint">(recomendado: 3-5)</span>
+              <span className="hint">(máximo: 10, recomendado: 3-5)</span>
             </label>
             <input
               type="number"
               min="1"
               max="10"
               value={config.parallel}
-              onChange={(e) => handleChange('parallel', parseInt(e.target.value))}
+              onChange={(e) => handleChange('parallel', e.target.value)}
+              onBlur={(e) => {
+                const value = parseInt(e.target.value) || 1
+                const clamped = Math.min(Math.max(1, value), 10)
+                if (value !== clamped) {
+                  handleChange('parallel', clamped)
+                }
+              }}
               className="form-input"
             />
           </div>

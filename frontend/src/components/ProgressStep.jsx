@@ -96,7 +96,6 @@ const ProgressStep = ({ jobStatus, config }) => {
         )}
       </div>
 
-      {/* Progress Bar */}
       <div className="progress-container">
         <div className="progress-bar">
           <div
@@ -109,7 +108,6 @@ const ProgressStep = ({ jobStatus, config }) => {
         </p>
       </div>
 
-      {/* Time Info */}
       <div className="time-info-section">
         <div className="time-card">
           <Clock size={24} />
@@ -138,7 +136,6 @@ const ProgressStep = ({ jobStatus, config }) => {
         )}
       </div>
 
-      {/* Stats Grid */}
       <div className="progress-stats">
         <div className="stat-card">
           <CheckCircle2 size={20} />
@@ -197,7 +194,6 @@ const ProgressStep = ({ jobStatus, config }) => {
         )}
       </div>
 
-      {/* Detailed Stats */}
       <div className="detailed-stats">
         <h3>Estatísticas Detalhadas</h3>
         <div className="stats-grid">

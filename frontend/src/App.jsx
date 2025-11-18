@@ -199,7 +199,6 @@ function App() {
             />
           ) : (
             <>
-              {/* Progress Steps */}
               <div className="steps-indicator">
             <div className={`step-item ${step >= 1 ? 'active' : ''} ${step > 1 ? 'completed' : ''}`}>
               <Upload size={20} />
@@ -227,7 +226,6 @@ function App() {
             </div>
           </div>
 
-          {/* Error Display */}
           {error && (
             <div className="alert error">
               <AlertCircle size={20} />
@@ -235,7 +233,6 @@ function App() {
             </div>
           )}
 
-          {/* Step Content */}
           <div className="step-content">
             {step === 1 && (
               <UploadStep 
@@ -292,7 +289,6 @@ function App() {
         </div>
       </main>
 
-      {/* File Viewer Modal */}
       {viewingFile && (
         <FileViewer
           data={viewingFile}
