@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from dotenv import load_dotenv
 
 from openai import OpenAI
+from deep_translator import GoogleTranslator
 
 
 import sys
@@ -165,10 +166,86 @@ def estimate_translation(
         }
 
 
+async def translate_batch_google_async(
+    items: List[Dict[str, Any]],
+    cache: Dict[str, str],
+    target_language: str,
+    stats: Dict[str, Any],
+    batch_num: int,
+    total_batches: int,
+    lock: Optional[asyncio.Lock] = None,
+) -> List[Dict[str, Any]]:
+    """
+    Traduz um batch de strings usando Google Translate de forma assíncrona.
+    Google Translate traduz uma string por vez, então fazemos isso em loop.
+    """
+    results = []
+    translator = GoogleTranslator(source='en', target=target_language)
+    
+    for item in items:
+        original = item["value"]
+        key = item["key"]
+        
+        # Verificar cache
+        if original in cache:
+            results.append({
+                "key": key,
+                "translated": cache[original]
+            })
+            if lock:
+                async with lock:
+                    stats["cached"] = stats.get("cached", 0) + 1
+            else:
+                stats["cached"] = stats.get("cached", 0) + 1
+            continue
+        
+        # Traduzir
+        try:
+            # Executar em thread pool para não bloquear o event loop
+            loop = asyncio.get_event_loop()
+            translated = await loop.run_in_executor(
+                None, 
+                translator.translate, 
+                original
+            )
+            
+            cache[original] = translated
+            results.append({
+                "key": key,
+                "translated": translated
+            })
+            
+            if lock:
+                async with lock:
+                    stats["translated"] = stats.get("translated", 0) + 1
+            else:
+                stats["translated"] = stats.get("translated", 0) + 1
+                
+            # Pequeno delay para evitar rate limits
+            await asyncio.sleep(0.1)
+            
+        except Exception as e:
+            # Em caso de erro, manter o original
+            cache[original] = original
+            results.append({
+                "key": key,
+                "translated": original
+            })
+            
+            if lock:
+                async with lock:
+                    stats["errors"] = stats.get("errors", 0) + 1
+            else:
+                stats["errors"] = stats.get("errors", 0) + 1
+    
+    return results
+
+
 async def translate_json_async(
     json_data: Dict[str, Any],
     target_language: str,
     job_id: str,
+    method: str = "openai",
     model: str = DEFAULT_MODEL,
     batch_size: int = DEFAULT_BATCH_SIZE,
     parallel: int = DEFAULT_PARALLEL,
@@ -212,7 +289,7 @@ async def translate_json_async(
         job.total_strings = len(all_strings)
         job.cached_strings = cached_count
         job.target_language = target_language
-        job.model = model
+        job.model = model if method == "openai" else "Google Translate"
         
 
         all_batches = []
@@ -223,21 +300,30 @@ async def translate_json_async(
         
         job.total_batches = len(all_batches)
         
+        # Para Google Translate, limitar paralelismo devido a rate limits
+        effective_parallel = parallel if method == "openai" else min(parallel, 2)
+        
         translated_entries = []
         lock = asyncio.Lock()
         
 
         async def process_batches_parallel():
             nonlocal translated_entries
-            semaphore = asyncio.Semaphore(parallel)
+            semaphore = asyncio.Semaphore(effective_parallel)
             
             async def process_single_batch(batch_data):
                 batch, batch_num = batch_data
                 async with semaphore:
-                    results = await translate_batch_async(
-                        batch, cache, target_language, model,
-                        job.stats, batch_num, job.total_batches, False, lock
-                    )
+                    if method == "google":
+                        results = await translate_batch_google_async(
+                            batch, cache, target_language,
+                            job.stats, batch_num, job.total_batches, lock
+                        )
+                    else:
+                        results = await translate_batch_async(
+                            batch, cache, target_language, model,
+                            job.stats, batch_num, job.total_batches, False, lock
+                        )
                     
 
                     async with lock:
@@ -249,11 +335,14 @@ async def translate_json_async(
                         job.progress = processed / job.total_strings if job.total_strings > 0 else 0.0
                         
 
-                        if model in MODEL_PRICING and job.stats["api_calls"] > 0:
+                        # Calcular custo apenas para OpenAI
+                        if method == "openai" and model in MODEL_PRICING and job.stats.get("api_calls", 0) > 0:
                             pricing = MODEL_PRICING[model]
-                            input_cost = (job.stats["total_prompt_tokens"] / 1_000_000) * pricing["input"]
-                            output_cost = (job.stats["total_completion_tokens"] / 1_000_000) * pricing["output"]
+                            input_cost = (job.stats.get("total_prompt_tokens", 0) / 1_000_000) * pricing["input"]
+                            output_cost = (job.stats.get("total_completion_tokens", 0) / 1_000_000) * pricing["output"]
                             job.actual_cost = input_cost + output_cost
+                        elif method == "google":
+                            job.actual_cost = 0.0  # Google Translate é gratuito
                         
 
                         elapsed = time.time() - job.start_time
@@ -267,10 +356,11 @@ async def translate_json_async(
                                 remaining_strings = job.total_strings - processed
                                 
 
-                                effective_parallel = min(parallel, job.total_batches - job.current_batch)
-                                if effective_parallel > 0:
+                                # Para Google Translate, usar paralelismo limitado
+                                eta_parallel = effective_parallel if method == "openai" else min(effective_parallel, 2)
+                                if eta_parallel > 0:
 
-                                    job.eta_seconds = int((remaining_strings * avg_time_per_string) / effective_parallel)
+                                    job.eta_seconds = int((remaining_strings * avg_time_per_string) / eta_parallel)
                                 else:
                                     job.eta_seconds = int(remaining_strings * avg_time_per_string)
                                 
@@ -306,15 +396,21 @@ async def translate_json_async(
                     })
         
 
-        if parallel > 1:
+        if effective_parallel > 1:
             await process_batches_parallel()
         else:
 
             for batch, batch_num in all_batches:
-                results = await translate_batch_async(
-                    batch, cache, target_language, model,
-                    job.stats, batch_num, job.total_batches, False, None
-                )
+                if method == "google":
+                    results = await translate_batch_google_async(
+                        batch, cache, target_language,
+                        job.stats, batch_num, job.total_batches, None
+                    )
+                else:
+                    results = await translate_batch_async(
+                        batch, cache, target_language, model,
+                        job.stats, batch_num, job.total_batches, False, None
+                    )
                 for r in results:
                     translated_entries.append({
                         "key": r["key"],

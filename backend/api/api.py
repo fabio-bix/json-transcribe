@@ -185,13 +185,6 @@ async def start_translation(
         if translation_req.method not in ["openai", "google"]:
             raise HTTPException(status_code=400, detail="Método deve ser 'openai' ou 'google'")
         
-
-        if translation_req.method == "google":
-            raise HTTPException(
-                status_code=501, 
-                detail="Google Translate ainda não está implementado na API. Por favor, use o método OpenAI ou aguarde uma atualização futura."
-            )
-        
         # Validar limites
         batch_size = translation_req.batch_size or DEFAULT_BATCH_SIZE
         parallel = translation_req.parallel or DEFAULT_PARALLEL
@@ -214,6 +207,7 @@ async def start_translation(
             json_data=translation_req.json_data,
             target_language=translation_req.target_language,
             job_id=job.job_id,
+            method=translation_req.method,
             model=translation_req.model or DEFAULT_MODEL,
             batch_size=batch_size,
             parallel=parallel,

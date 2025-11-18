@@ -98,12 +98,6 @@ const EstimateStep = ({ estimate, onStart, onBack, loading }) => {
         </div>
       </div>
 
-      {isGoogleTranslate && (
-        <div className="alert error" style={{ marginBottom: '1.5rem' }}>
-          <span>⚠️ Google Translate ainda não está implementado na API. Por favor, use o método OpenAI.</span>
-        </div>
-      )}
-
       <div className="btn-group">
         <button className="btn btn-secondary" onClick={onBack} disabled={loading}>
           Voltar
@@ -111,8 +105,7 @@ const EstimateStep = ({ estimate, onStart, onBack, loading }) => {
         <button 
           className="btn btn-success" 
           onClick={onStart} 
-          disabled={loading || isGoogleTranslate}
-          title={isGoogleTranslate ? 'Google Translate ainda não está implementado' : ''}
+          disabled={loading}
         >
           {loading ? 'Iniciando...' : 'Iniciar Tradução'}
         </button>
