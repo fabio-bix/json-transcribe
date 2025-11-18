@@ -1,8 +1,4 @@
 #!/usr/bin/env python3
-"""
-Script para traduzir arquivos JSON mantendo a estrutura e traduzindo apenas os valores de texto.
-Inclui logs de progresso detalhados.
-"""
 
 import json
 import sys
@@ -19,21 +15,7 @@ def translate_value_recursive(
     stats: Dict[str, int],
     path: str = ""
 ) -> Any:
-    """
-    Traduz recursivamente valores em estruturas JSON mantendo a estrutura original.
-    
-    Args:
-        value: Valor a ser processado
-        translator: Instância do tradutor
-        cache: Cache de traduções
-        stats: Dicionário com estatísticas
-        path: Caminho atual (para logs)
-    
-    Returns:
-        Valor traduzido
-    """
     if isinstance(value, dict):
-        # Se for um dicionário, traduz recursivamente cada valor
         return {
             key: translate_value_recursive(
                 val, translator, cache, stats, f"{path}.{key}" if path else key
@@ -42,7 +24,6 @@ def translate_value_recursive(
         }
     
     elif isinstance(value, list):
-        # Se for uma lista, traduz recursivamente cada item
         return [
             translate_value_recursive(
                 item, translator, cache, stats, f"{path}[{i}]" if path else f"[{i}]"
@@ -51,15 +32,12 @@ def translate_value_recursive(
         ]
     
     elif isinstance(value, str) and value.strip():
-        # Se for uma string não vazia, traduz
         original = value
         
-        # Verifica cache
         if original in cache:
             stats["cached"] += 1
             return cache[original]
         
-        # Atualiza progresso (apenas se não estiver em cache)
         try:
             import builtins
             if hasattr(builtins, '_tracker'):
@@ -67,7 +45,6 @@ def translate_value_recursive(
         except:
             pass
         
-        # Traduz
         try:
             translated = translator.translate(original)
             cache[original] = translated
@@ -76,11 +53,10 @@ def translate_value_recursive(
         except Exception as e:
             stats["errors"] += 1
             print(f"\n⚠️  Erro ao traduzir '{path}': {e}")
-            cache[original] = original  # Cache o original para não tentar de novo
+            cache[original] = original
             return original
     
     else:
-        # Para outros tipos (int, float, bool, None, strings vazias), retorna sem alteração
         return value
 
 
@@ -90,22 +66,11 @@ def translate_json_file(
     target_language: str = 'pt',
     source_language: str = 'en'
 ) -> None:
-    """
-    Traduz um arquivo JSON completo com logs de progresso.
-    
-    Args:
-        input_file: Caminho do arquivo JSON de entrada
-        output_file: Caminho do arquivo JSON de saída (se None, usa input_file com sufixo)
-        target_language: Idioma de destino (padrão: 'pt')
-        source_language: Idioma de origem (padrão: 'en')
-    """
-    # Verifica se o arquivo existe
     input_path = Path(input_file)
     if not input_path.exists():
         print(f"❌ Erro: Arquivo '{input_file}' não encontrado!")
         sys.exit(1)
     
-    # Define o arquivo de saída
     if output_file is None:
         output_path = input_path.parent / f"{input_path.stem}_{target_language}{input_path.suffix}"
     else:
@@ -120,10 +85,8 @@ def translate_json_file(
     print(f"🌍 Idioma destino: {target_language}")
     print("=" * 60)
     
-    # Arquivo de cache
     cache_file = input_path.parent / f".translate_cache_{target_language}.json"
     
-    # Carrega cache existente
     cache = {}
     if cache_file.exists():
         try:
@@ -133,7 +96,6 @@ def translate_json_file(
         except Exception as e:
             print(f"⚠️  Não foi possível carregar cache: {e}")
     
-    # Lê o arquivo JSON
     print("\n📖 Lendo arquivo...")
     try:
         with open(input_path, 'r', encoding='utf-8') as f:
@@ -146,9 +108,7 @@ def translate_json_file(
         print(f"❌ Erro ao abrir arquivo: {e}")
         sys.exit(1)
     
-    # Conta strings para traduzir (para progresso)
     def count_strings(obj: Any) -> int:
-        """Conta quantas strings precisam ser traduzidas."""
         count = 0
         if isinstance(obj, dict):
             for v in obj.values():
@@ -173,7 +133,6 @@ def translate_json_file(
         print("\n✅ Todas as strings já estão traduzidas no cache!")
         print("   Se quiser retraduzir, delete o arquivo de cache.")
     
-    # Inicia tradução
     print("\n" + "=" * 60)
     print("🔄 INICIANDO TRADUÇÃO...")
     print("=" * 60)
@@ -186,10 +145,8 @@ def translate_json_file(
         "total": 0
     }
     
-    # Inicializa o tradutor uma vez (mais eficiente)
     translator = GoogleTranslator(source=source_language, target=target_language)
     
-    # Classe para rastrear progresso
     class ProgressTracker:
         def __init__(self, total: int):
             self.total = total
@@ -216,18 +173,14 @@ def translate_json_file(
     
     tracker = ProgressTracker(total_strings)
     
-    # Torna tracker acessível globalmente para a função recursiva
     import builtins
     builtins._tracker = tracker
     
-    # Traduz mantendo a estrutura original
     print("Processando...")
     output_data = translate_value_recursive(data, translator, cache, stats)
     
-    # Limpa a linha de progresso
     print("\r" + " " * 100 + "\r", end="")
     
-    # Salva cache
     if cache:
         try:
             with open(cache_file, 'w', encoding='utf-8') as f:
@@ -236,7 +189,6 @@ def translate_json_file(
         except Exception as e:
             print(f"⚠️  Erro ao salvar cache: {e}")
     
-    # Estatísticas finais
     total_time = time.time() - start_time
     minutes = int(total_time // 60)
     seconds = int(total_time % 60)
@@ -253,13 +205,12 @@ def translate_json_file(
     if stats['translated'] > 0:
         print(f"  • Velocidade: {stats['translated'] / total_time:.1f} strings/segundo")
     
-    # Salva o arquivo traduzido
     print(f"\n💾 Salvando arquivo traduzido: {output_path}")
     try:
         with open(output_path, 'w', encoding='utf-8') as f:
             json.dump(output_data, f, ensure_ascii=False, indent=2)
         
-        file_size = output_path.stat().st_size / 1024  # KB
+        file_size = output_path.stat().st_size / 1024
         print(f"✓ Arquivo salvo com sucesso!")
         print(f"  • Tamanho: {file_size:.1f} KB")
         print(f"  • Localização: {output_path.absolute()}")
@@ -274,7 +225,6 @@ def translate_json_file(
 
 
 def main():
-    """Função principal do script."""
     if len(sys.argv) < 2:
         print("Uso: python script.py <arquivo_json> [idioma_destino] [arquivo_saida]")
         print("\nExemplos:")

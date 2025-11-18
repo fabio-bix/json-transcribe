@@ -59,7 +59,7 @@ pip3 install --break-system-packages -r requirements.txt
 ### Ou ativar o ambiente virtual manualmente:
 ```bash
 source venv/bin/activate
-python src/script.py en.json pt
+python backend/scripts/script.py en.json pt
 deactivate  # quando terminar
 ```
 

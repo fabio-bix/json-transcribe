@@ -44,31 +44,31 @@ OPENAI_API_KEY=sk-sua-chave-aqui
 ### Tradução básica
 
 ```bash
-python src/script_openai.py en.json pt
+python backend/scripts/script_openai.py en.json pt
 ```
 
 ### Modo dry-run (teste sem salvar)
 
 ```bash
-python src/script_openai.py en.json pt --dry
+python backend/scripts/script_openai.py en.json pt --dry
 ```
 
 ### Customizar tamanho do batch
 
 ```bash
-python src/script_openai.py en.json pt --batch 5
+python backend/scripts/script_openai.py en.json pt --batch 5
 ```
 
 ### Especificar arquivo de saída
 
 ```bash
-python src/script_openai.py en.json pt pt.json
+python backend/scripts/script_openai.py en.json pt pt.json
 ```
 
 ### Usar modelo diferente
 
 ```bash
-python src/script_openai.py en.json pt --model gpt-4
+python backend/scripts/script_openai.py en.json pt --model gpt-4
 ```
 
 ## Opções

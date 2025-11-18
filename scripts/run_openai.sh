@@ -1,15 +1,11 @@
 #!/bin/bash
 
-# Script helper para executar o script de tradução OpenAI com o ambiente virtual
-
-# Verifica se o ambiente virtual existe
 if [ ! -d "venv" ]; then
     echo "ERRO: Ambiente virtual não encontrado!"
     echo "Execute primeiro: ./install.sh"
     exit 1
 fi
 
-# Verifica se .env existe
 if [ ! -f ".env" ]; then
     echo "⚠️  Arquivo .env não encontrado!"
     echo "Criando arquivo .env de exemplo..."
@@ -23,6 +19,5 @@ if [ ! -f ".env" ]; then
     exit 1
 fi
 
-# Ativa o ambiente virtual e executa o script
 source venv/bin/activate
-python src/script_openai.py "$@"
+python backend/scripts/script_openai.py "$@"

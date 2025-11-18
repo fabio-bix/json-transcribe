@@ -1,17 +1,13 @@
 #!/bin/bash
 
-# Script de instalação automática
-
 echo "=== Instalação do Script de Tradução ==="
 echo ""
 
-# Verifica se pip3 está instalado
 if command -v pip3 &> /dev/null; then
     echo "✓ pip3 já está instalado"
 else
     echo "pip3 não encontrado. Tentando instalar..."
     
-    # Tenta instalar pip3
     if command -v sudo &> /dev/null; then
         echo "Instalando pip3 com sudo..."
         sudo apt update
@@ -24,7 +20,6 @@ else
     fi
 fi
 
-# Verifica novamente se pip3 está disponível
 if command -v pip3 &> /dev/null; then
     echo "✓ pip3 instalado com sucesso"
 else
@@ -32,12 +27,10 @@ else
     exit 1
 fi
 
-# Verifica se python3-venv está instalado e funcional
 PYTHON_VERSION=$(python3 --version | cut -d' ' -f2 | cut -d'.' -f1,2)
 if ! python3 -m venv --help &>/dev/null 2>&1; then
     echo "python3-venv não está funcional. Tentando instalar..."
     if command -v sudo &> /dev/null; then
-        # Tenta instalar o pacote específico da versão do Python primeiro
         echo "Instalando python${PYTHON_VERSION}-venv..."
         sudo apt install -y python${PYTHON_VERSION}-venv 2>/dev/null || \
         sudo apt install -y python3-venv 2>/dev/null || {
@@ -54,7 +47,6 @@ if ! python3 -m venv --help &>/dev/null 2>&1; then
     fi
 fi
 
-# Cria ambiente virtual se não existir
 if [ ! -d "venv" ]; then
     echo ""
     echo "Criando ambiente virtual..."
@@ -68,25 +60,31 @@ else
     echo "✓ Ambiente virtual já existe"
 fi
 
-# Ativa o ambiente virtual e instala dependências
 echo ""
 echo "Instalando dependências no ambiente virtual..."
 source venv/bin/activate
 pip install --upgrade pip
-pip install -r requirements.txt
+
+if [ -f "requirements.txt" ]; then
+    echo "Instalando dependências do Google Translate..."
+    pip install -r requirements.txt
+fi
+
+if [ -f "requirements_openai.txt" ]; then
+    echo "Instalando dependências da API (OpenAI/FastAPI)..."
+    pip install -r requirements_openai.txt
+fi
 
 if [ $? -eq 0 ]; then
     echo ""
     echo "✓ Instalação concluída com sucesso!"
     echo ""
-    echo "Para usar o script, ative o ambiente virtual primeiro:"
-    echo "  source venv/bin/activate"
+    echo "Scripts disponíveis:"
+    echo "  • Google Translate: ./scripts/run.sh en.json pt"
+    echo "  • OpenAI (CLI): ./scripts/run_openai.sh en.json pt"
+    echo "  • API REST: ./scripts/run_api.sh"
     echo ""
-    echo "Depois execute:"
-    echo "  python src/script.py en.json pt"
-    echo ""
-    echo "Ou use o script helper:"
-    echo "  ./run.sh en.json pt"
+    echo "Documentação da API: http://localhost:8000/docs"
 else
     echo ""
     echo "ERRO: Falha ao instalar dependências"

@@ -1,104 +1,87 @@
-# Script de Tradução JSON
+# JSON Translator
 
-Script Python para traduzir arquivos JSON mantendo a estrutura e traduzindo apenas os valores de texto.
+Sistema completo para tradução de arquivos JSON usando OpenAI ou Google Translate.
 
-## Instalação
+## 📁 Estrutura do Projeto
 
-### Opção 1: Instalação Automática (Recomendado)
+```
+translate_script/
+├── backend/                 # Backend Python
+│   ├── api/                 # API REST (FastAPI)
+│   │   └── api.py
+│   ├── core/                # Lógica core de tradução
+│   │   └── translator_service.py
+│   └── scripts/             # Scripts CLI
+│       ├── script.py        # Google Translate
+│       └── script_openai.py # OpenAI
+├── frontend/                # Frontend React + Vite
+│   └── src/
+│       ├── components/      # Componentes React
+│       ├── services/        # Serviços API
+│       ├── styles/          # Estilos CSS
+│       ├── utils/           # Utilitários
+│       └── constants/       # Constantes
+├── scripts/                 # Scripts shell
+│   ├── run_api.sh
+│   ├── run_frontend.sh
+│   ├── run_openai.sh
+│   └── run.sh
+├── docs/                    # Documentação
+│   ├── README.md
+│   ├── README_API.md
+│   ├── README_FRONTEND.md
+│   ├── README_OPENAI.md
+│   ├── INSTALL.md
+│   └── QUICK_START.md
+├── output/                  # Arquivos traduzidos
+├── venv/                    # Ambiente virtual Python
+└── requirements*.txt        # Dependências Python
+```
+
+## 🚀 Início Rápido
+
+### Instalação
+
 ```bash
 ./install.sh
 ```
 
-### Opção 2: Instalação Manual
-
-1. Instale o pip3 (se ainda não tiver):
-```bash
-sudo apt install python3-pip
-```
-
-2. Instale as dependências:
-```bash
-pip3 install -r requirements.txt
-```
-
-### Opção 3: Usar pip do usuário (sem sudo)
-```bash
-# Baixar e instalar pip para o usuário
-curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-python3 get-pip.py --user
-
-# Adicionar ao PATH
-export PATH=$PATH:~/.local/bin
-
-# Instalar dependências
-pip install --user -r requirements.txt
-```
-
-Para mais detalhes, consulte [INSTALL.md](INSTALL.md)
-
-## Uso
-
-### Opção 1: Usar o script helper (Recomendado)
-```bash
-# Traduzir para português
-./run.sh en.json pt
-
-# Especificar arquivo de saída
-./run.sh en.json pt pt.json
-
-# Traduzir para outros idiomas
-./run.sh en.json es es.json
-```
-
-### Opção 2: Ativar ambiente virtual manualmente
-```bash
-# Ativar o ambiente virtual
-source venv/bin/activate
-
-# Traduzir para português
-python src/script.py en.json pt
-
-# Especificar arquivo de saída
-python src/script.py en.json pt pt.json
-
-# Traduzir para outros idiomas
-python src/script.py en.json es es.json
-
-# Desativar o ambiente virtual (quando terminar)
-deactivate
-```
-
-## Parâmetros
-
-- `arquivo_json`: Caminho do arquivo JSON de entrada (obrigatório)
-- `idioma_destino`: Código do idioma de destino (padrão: 'pt')
-- `arquivo_saida`: Caminho do arquivo JSON de saída (opcional, se não especificado, será criado automaticamente)
-
-## Idiomas suportados
-
-O script usa Google Translator, que suporta diversos idiomas. Alguns exemplos:
-- `pt` - Português
-- `es` - Espanhol
-- `fr` - Francês
-- `de` - Alemão
-- `it` - Italiano
-- `ja` - Japonês
-- `zh` - Chinês
-
-## Exemplo
+### Executar API
 
 ```bash
-# Traduzir en.json para português
-./run.sh en.json pt
-
-# Isso criará um arquivo en_pt.json com todas as traduções
+./scripts/run_api.sh
 ```
 
-## Notas
+### Executar Frontend
 
-- O script mantém todas as chaves do JSON originais
-- Apenas os valores de texto são traduzidos
-- Números, booleanos e null são mantidos sem alteração
-- A estrutura aninhada do JSON é preservada
-- O processo pode levar alguns minutos para arquivos grandes
+```bash
+./scripts/run_frontend.sh
+```
+
+### Executar Scripts CLI
+
+```bash
+# OpenAI
+./scripts/run_openai.sh en.json pt
+
+# Google Translate
+./scripts/run.sh en.json pt
+```
+
+## 📚 Documentação
+
+Consulte a pasta `docs/` para documentação detalhada:
+- `docs/QUICK_START.md` - Guia rápido
+- `docs/INSTALL.md` - Instalação detalhada
+- `docs/README_API.md` - Documentação da API
+- `docs/README_FRONTEND.md` - Documentação do Frontend
+- `docs/README_OPENAI.md` - Documentação do script OpenAI
+
+## 🌍 Idiomas Suportados
+
+Espanhol, Português, Francês, Alemão, Italiano, Holandês, Polonês, Sueco, Dinamarquês, Norueguês, Finlandês, Tcheco, Húngaro, Romeno, Croata, Sérvio (Latinizado), Turco, Indonésio, Filipino (Tagalog), Malaio
+
+## 📝 Licença
+
+Este projeto é de uso interno.
 

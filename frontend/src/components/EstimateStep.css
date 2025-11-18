@@ -1,0 +1,145 @@
+.estimate-step {
+  text-align: center;
+}
+
+.estimate-header {
+  margin-bottom: 2rem;
+}
+
+.estimate-icon {
+  color: var(--primary);
+  margin-bottom: 1rem;
+}
+
+.estimate-header h2 {
+  font-size: 1.75rem;
+  margin: 1rem 0 0.5rem;
+  color: var(--text);
+}
+
+.estimate-header p {
+  color: var(--text-muted);
+  font-size: 1rem;
+}
+
+.estimate-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.estimate-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.estimate-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--shadow);
+}
+
+.estimate-card.highlight {
+  border-width: 2px;
+}
+
+.estimate-card.cost {
+  border-color: var(--warning);
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.estimate-card.time {
+  border-color: var(--primary);
+  background: rgba(99, 102, 241, 0.1);
+}
+
+.estimate-card svg {
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.estimate-card.cost svg {
+  color: var(--warning);
+}
+
+.estimate-card.time svg {
+  color: var(--primary);
+}
+
+.estimate-label {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin-bottom: 0.25rem;
+}
+
+.estimate-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.estimate-details {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  text-align: left;
+}
+
+.estimate-details h3 {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  color: var(--text);
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem;
+  background: var(--bg-card);
+  border-radius: 0.5rem;
+}
+
+.detail-label {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.detail-value {
+  color: var(--text);
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .estimate-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+  }
+  
+  .estimate-card {
+    padding: 1.25rem;
+  }
+  
+  .estimate-value {
+    font-size: 1.25rem;
+  }
+  
+  .details-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
