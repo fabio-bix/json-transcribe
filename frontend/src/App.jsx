@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Upload, FileCheck, Settings, Play, Loader2, CheckCircle2, AlertCircle, Download, FolderOpen } from 'lucide-react'
+import { Upload, FileCheck, Settings, Play, Loader2, CheckCircle2, AlertCircle, Download, FolderOpen, GitCompare } from 'lucide-react'
 import './styles/App.css'
 import UploadStep from './components/UploadStep'
 import ValidationStep from './components/ValidationStep'
@@ -9,6 +9,8 @@ import ProgressStep from './components/ProgressStep'
 import ResultStep from './components/ResultStep'
 import FilesList from './components/FilesList'
 import FileViewer from './components/FileViewer'
+import CompareStep from './components/CompareStep'
+import CompareView from './components/CompareView'
 import { uploadJSON, estimateTranslation, startTranslation, getJobStatus, getJobResult, saveJobResult } from './services/api'
 
 function App() {
@@ -31,6 +33,13 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [viewingFile, setViewingFile] = useState(null)
   const [viewingFilename, setViewingFilename] = useState(null)
+  // Estados para comparação
+  const [compareFile1, setCompareFile1] = useState(null)
+  const [compareFile2, setCompareFile2] = useState(null)
+  const [compareData1, setCompareData1] = useState(null)
+  const [compareData2, setCompareData2] = useState(null)
+  const [compareFile1Name, setCompareFile1Name] = useState(null)
+  const [compareFile2Name, setCompareFile2Name] = useState(null)
 
   const handleUpload = async (file) => {
     setLoading(true)
@@ -152,6 +161,37 @@ function App() {
     setViewingFilename(null)
   }
 
+  const handleCompare = async (file1, file2) => {
+    setLoading(true)
+    setError(null)
+    try {
+      // Fazer upload e parse dos dois arquivos
+      const response1 = await uploadJSON(file1)
+      const response2 = await uploadJSON(file2)
+      
+      setCompareData1(response1.data)
+      setCompareData2(response2.data)
+      setCompareFile1Name(response1.filename)
+      setCompareFile2Name(response2.filename)
+      setCompareFile1(file1)
+      setCompareFile2(file2)
+    } catch (err) {
+      setError(err.response?.data?.detail || err.message || 'Erro ao processar arquivos')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleBackFromCompare = () => {
+    setCompareFile1(null)
+    setCompareFile2(null)
+    setCompareData1(null)
+    setCompareData2(null)
+    setCompareFile1Name(null)
+    setCompareFile2Name(null)
+    setError(null)
+  }
+
   return (
     <div className="app">
       <header className="header">
@@ -176,6 +216,16 @@ function App() {
                 Nova Tradução
               </button>
               <button
+                className={`nav-btn ${page === 'compare' ? 'active' : ''}`}
+                onClick={() => {
+                  setPage('compare')
+                  handleBackFromCompare()
+                }}
+              >
+                <GitCompare size={20} />
+                Comparar JSONs
+              </button>
+              <button
                 className={`nav-btn ${page === 'files' ? 'active' : ''}`}
                 onClick={() => setPage('files')}
               >
@@ -197,6 +247,30 @@ function App() {
                 handleReset()
               }}
             />
+          ) : page === 'compare' ? (
+            <>
+              {error && (
+                <div className="alert error">
+                  <AlertCircle size={20} />
+                  <span>{error}</span>
+                </div>
+              )}
+
+              {compareData1 && compareData2 ? (
+                <CompareView
+                  file1Data={compareData1}
+                  file2Data={compareData2}
+                  file1Name={compareFile1Name}
+                  file2Name={compareFile2Name}
+                  onBack={handleBackFromCompare}
+                />
+              ) : (
+                <CompareStep
+                  onCompare={handleCompare}
+                  loading={loading}
+                />
+              )}
+            </>
           ) : (
             <>
               <div className="steps-indicator">
