@@ -64,6 +64,69 @@ translate_script/
 - Node.js 18+ e npm
 - Chave API da OpenAI (para método OpenAI)
 
+---
+
+## 🪟 Instalação no Windows
+
+### Passo 1: Instalar Python
+
+1. Baixe Python 3.12+ de [python.org/downloads](https://www.python.org/downloads/)
+2. Durante a instalação, **marque a opção "Add Python to PATH"**
+3. Verifique a instalação abrindo o **Prompt de Comando** ou **PowerShell** e execute:
+   ```cmd
+   python --version
+   ```
+
+### Passo 2: Instalar Node.js
+
+1. Baixe Node.js 18+ de [nodejs.org](https://nodejs.org/)
+2. Execute o instalador e siga as instruções
+3. Verifique a instalação:
+   ```cmd
+   node --version
+   npm --version
+   ```
+
+### Passo 3: Executar script de instalação
+
+Abra o **Prompt de Comando** ou **PowerShell** na pasta do projeto e execute:
+
+```cmd
+scripts\install_windows.bat
+```
+
+Este script irá:
+- Verificar se Python e Node.js estão instalados
+- Criar ambiente virtual Python
+- Instalar dependências Python
+- Instalar dependências do frontend
+- Configurar o projeto
+
+### Passo 4: Configurar variáveis de ambiente
+
+Crie um arquivo `.env` na raiz do projeto (ou edite se já existir):
+
+**Opção 1: Usando Notepad**
+```cmd
+notepad .env
+```
+
+**Opção 2: Usando PowerShell**
+```powershell
+echo OPENAI_API_KEY=sk-sua-chave-aqui > .env
+```
+
+Adicione no arquivo:
+```
+OPENAI_API_KEY=sk-sua-chave-aqui
+```
+
+**Nota**: A chave OpenAI é necessária apenas se você usar o método OpenAI. O Google Translate não requer chave.
+
+---
+
+## 🐧 Instalação no Linux/Mac
+
 ### Passo 1: Instalar Python venv
 
 ```bash
@@ -87,7 +150,7 @@ Este script irá:
 Crie um arquivo `.env` na raiz do projeto:
 
 ```bash
-OPENAI_API_KEY=sk-sua-chave-aqui
+echo "OPENAI_API_KEY=sk-sua-chave-aqui" > .env
 ```
 
 **Nota**: A chave OpenAI é necessária apenas se você usar o método OpenAI. O Google Translate não requer chave.
@@ -96,7 +159,34 @@ OPENAI_API_KEY=sk-sua-chave-aqui
 
 ### Opção 1: Interface Web (Recomendado)
 
-#### Terminal 1 - Backend (API)
+#### 🪟 Windows
+
+**Terminal 1 - Backend (API)**
+
+Abra um **Prompt de Comando** ou **PowerShell** e execute:
+
+```cmd
+scripts\run_api.bat
+```
+
+A API estará disponível em:
+- **API**: http://localhost:8000
+- **Documentação**: http://localhost:8000/docs
+
+**Terminal 2 - Frontend**
+
+Abra outro **Prompt de Comando** ou **PowerShell** e execute:
+
+```cmd
+scripts\run_frontend.bat
+```
+
+O frontend estará disponível em:
+- **Interface**: http://localhost:3000
+
+#### 🐧 Linux/Mac
+
+**Terminal 1 - Backend (API)**
 
 ```bash
 ./scripts/run_api.sh
@@ -106,7 +196,7 @@ A API estará disponível em:
 - **API**: http://localhost:8000
 - **Documentação**: http://localhost:8000/docs
 
-#### Terminal 2 - Frontend
+**Terminal 2 - Frontend**
 
 ```bash
 ./scripts/run_frontend.sh
@@ -117,13 +207,29 @@ O frontend estará disponível em:
 
 ### Opção 2: Scripts CLI
 
-#### Google Translate (Gratuito)
+#### 🪟 Windows
+
+**Google Translate (Gratuito)**
+
+```cmd
+scripts\run.bat en.json pt
+```
+
+**OpenAI (Requer chave API)**
+
+```cmd
+scripts\run_openai.bat en.json pt
+```
+
+#### 🐧 Linux/Mac
+
+**Google Translate (Gratuito)**
 
 ```bash
 ./scripts/run.sh en.json pt
 ```
 
-#### OpenAI (Requer chave API)
+**OpenAI (Requer chave API)**
 
 ```bash
 ./scripts/run_openai.sh en.json pt
@@ -419,22 +525,84 @@ O sistema suporta tradução do inglês para:
 
 ## 🔧 Troubleshooting
 
-### Erro: "OPENAI_API_KEY não encontrada"
+### 🪟 Windows
+
+#### Erro: "Python não é reconhecido como comando"
+
+**Solução**: 
+1. Reinstale Python marcando "Add Python to PATH"
+2. Ou adicione manualmente Python ao PATH:
+   - Abra "Variáveis de Ambiente" no Painel de Controle
+   - Adicione `C:\Python312` (ou versão instalada) ao PATH
+   - Reinicie o terminal
+
+#### Erro: "Node não é reconhecido como comando"
+
+**Solução**: 
+1. Reinstale Node.js
+2. Ou adicione manualmente ao PATH:
+   - Normalmente em `C:\Program Files\nodejs\`
+   - Reinicie o terminal
+
+#### Erro ao executar scripts .bat
+
+**Solução**: 
+- Certifique-se de executar no **Prompt de Comando** ou **PowerShell**
+- Navegue até a pasta do projeto antes de executar:
+  ```cmd
+  cd C:\caminho\para\translate_script
+  scripts\install_windows.bat
+  ```
+
+#### Erro: "venv\Scripts\activate.bat não encontrado"
+
+**Solução**: 
+- Execute o script de instalação novamente:
+  ```cmd
+  scripts\install_windows.bat
+  ```
+
+#### Firewall bloqueando conexões
+
+**Solução**: 
+- Permita Python e Node.js através do Firewall do Windows
+- Ou desative temporariamente o firewall para testes
+
+### 🐧 Linux/Mac
+
+#### Erro: "permission denied" ao executar scripts
+
+**Solução**: 
+```bash
+chmod +x install.sh
+chmod +x scripts/*.sh
+```
+
+### Geral
+
+#### Erro: "OPENAI_API_KEY não encontrada"
 
 **Solução**: Crie um arquivo `.env` na raiz com sua chave:
-```
-OPENAI_API_KEY=sk-sua-chave-aqui
+
+**Windows:**
+```cmd
+notepad .env
 ```
 
-### Erro: "JSON inválido"
+**Linux/Mac:**
+```bash
+echo "OPENAI_API_KEY=sk-sua-chave-aqui" > .env
+```
+
+#### Erro: "JSON inválido"
 
 **Solução**: Verifique se o arquivo é um JSON válido. Use um validador JSON online.
 
-### Erro: "Tamanho do batch deve estar entre 1 e 250"
+#### Erro: "Tamanho do batch deve estar entre 1 e 250"
 
 **Solução**: Ajuste o tamanho do batch para um valor entre 1 e 250.
 
-### Tradução muito lenta (Google Translate)
+#### Tradução muito lenta (Google Translate)
 
 **Causa**: Google Translate tem rate limits e é naturalmente mais lento.
 
@@ -443,14 +611,14 @@ OPENAI_API_KEY=sk-sua-chave-aqui
 - Reduza paralelismo para 1-2
 - Aguarde o processamento (é normal ser lento)
 
-### Erro de conexão com API
+#### Erro de conexão com API
 
 **Solução**:
 - Verifique se o backend está rodando (http://localhost:8000)
 - Verifique se há firewall bloqueando
 - Verifique logs do backend
 
-### Arquivo não aparece na lista
+#### Arquivo não aparece na lista
 
 **Solução**:
 - Verifique a pasta `output/`

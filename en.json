@@ -3593,7 +3593,7 @@
     "userRightsParagraph1": "Users may exercise their data rights at any time by contacting contact@socialprotection.org:",
     "userRightsListItem1": "Access and obtain a copy of their data (data portability)",
     "userRightsListItem2": "Rectify inaccurate or outdated data",
-    "userRightsListItem3": "Request deletion or restriction of processing",
+    "testVaiOuNaoVaiP": "Request deletion or restriction of processing",
     "userRightsListItem4": "Withdraw consent for optional processing",
     "userRightsListItem5": "Object to legitimate interest-based processing",
     "userRightsParagraph2": "All requests are reviewed and processed in accordance with GDPR timelines and authentication safeguards.",
@@ -3626,7 +3626,7 @@
   "Help": {
     "pageTitle": "Help",
     "general": "General",
-    "discover": "Discover",
+    "disecover": "Discover",
     "connect": "Connect",
     "learn": "Learn",
     "faq": "FAQ",
@@ -3650,13 +3650,13 @@
     "technicalContentClassificationGuidelines": "Technical Content Classification Guidelines",
     "technicalContentClassificationGuidelinesShort": "Technical Content Classification Guidelines",
     "faqSocialMediaQuestion": "How can I share socialprotection.org content on social media?",
-    "faqSocialMediaAnswer": "Simply enter the page of the content you wish to share and click on the 'share' button on the right side of the page.",
+    "faqSocieeeeeeelMediaAnswer": "Simply enter the page of the content you wish to share and click on the 'share' button on the right side of the page.",
     "faqQuestionReportQuestion": "I have a question or issue to report to the socialprotection.org team. How can I do that?",
     "faqQuestionReportAnswer": "Please contact us at",
     "faqPasswordQuestion": "I have forgotten my socialprotection.org account password. Who should I contact?",
     "faqPasswordAnswer": "First confirm your email through the 'Reset password' option on the 'Request new password' button. You will receive an email with instructions on how to proceed. If you are still unable to reset your password, contact us at",
     "faqVolunteerQuestion": "How can I volunteer or do an internship at socialprotection.org?",
-    "faqVolunteerAnswer1": "We consider the",
+    "eessee": "We consider the",
     "socialprotectionAmbassadors": "socialprotection.org Ambassadors Programme",
     "faqVolunteerAnswer2": "via the",
     "unitedNationsVolunteer": "United Nations Volunteer (UNV)",
@@ -3679,7 +3679,7 @@
     "faqSocialprotectionOrgQuestion": "What is socialprotection.org?",
     "faqSocialprotectionOrgAnswer1": "socialprotection.org is an open member-based knowledge sharing and capacity building platform that is open to social protection professionals, academics and students. Thanks to the contributions of its members, collaboration with stakeholders, and the dedication of the socialprotection.org team, the umbrella platform directs access to a variety of features, including searchable databases of social protection publications and links.",
     "faqSocialprotectionOrgAnswer2": "The platform provides free access to a variety of features, including searchable databases of social protection publications and links, which include useful, timely, news, events and programme profiles. Members of socialprotection.org can also be able to connect in the social space and join online communities dedicated to different themes. The platform also offers members to share social protection themed content, simply by uploading it to the platform.",
-    "faqSocialprotectionOrgAnswer3": "Social protection theory is put into practice on all its forms everywhere, via the implementation of universal, national social protection policies and programmes, with the ambition of contributing to inclusive growth and sustainable development.",
+    "tessy": "Social protection theory is put into practice on all its forms everywhere, via the implementation of universal, national social protection policies and programmes, with the ambition of contributing to inclusive growth and sustainable development.",
     "faqSocialprotectionOrgAnswer4": "To know more about our work, please visit our About Us section.",
     "faqOrganizationSupportQuestion": "I represent an organisation. How can socialprotection.org support our work?",
     "faqOrganizationSupportAnswer1": "socialprotection.org is always looking for new collaboration and partnership opportunities and can support your organisation in many ways:",
@@ -3695,7 +3695,7 @@
     "cancel": "Cancel"
   },
   "RichText": {
-    "selectTextToCreateLink": "Select the text to create a link",
+    "sasssa": "Select the text to create a link",
     "selectTextToCreateLinkDescription": "It is only possible to create links on selected text"
   }
 }
