@@ -68,60 +68,150 @@ translate_script/
 
 ## 🪟 Instalação no Windows
 
-### Passo 1: Instalar Python
+### ✅ Pré-requisitos (Instalar Primeiro)
 
-1. Baixe Python 3.12+ de [python.org/downloads](https://www.python.org/downloads/)
-2. Durante a instalação, **marque a opção "Add Python to PATH"**
-3. Verifique a instalação abrindo o **Prompt de Comando** ou **PowerShell** e execute:
-   ```cmd
-   python --version
-   ```
+1. **Python 3.12+**
+   - Baixe de [python.org/downloads](https://www.python.org/downloads/)
+   - ⚠️ **IMPORTANTE**: Marque "Add Python to PATH" durante a instalação
+   - Verifique: `python --version`
 
-### Passo 2: Instalar Node.js
+2. **Node.js 18+**
+   - Baixe de [nodejs.org](https://nodejs.org/)
+   - Verifique: `node --version` e `npm --version`
 
-1. Baixe Node.js 18+ de [nodejs.org](https://nodejs.org/)
-2. Execute o instalador e siga as instruções
-3. Verifique a instalação:
-   ```cmd
-   node --version
-   npm --version
-   ```
+---
 
-### Passo 3: Executar script de instalação
+## 📋 Passo a Passo - Windows (Após Instalar Python e Node.js)
 
-Abra o **Prompt de Comando** ou **PowerShell** na pasta do projeto e execute:
+### Passo 1: Abrir o Terminal
+
+Abra o **Prompt de Comando** (CMD) ou **PowerShell**:
+- Pressione `Win + R`
+- Digite `cmd` ou `powershell`
+- Pressione Enter
+
+### Passo 2: Navegar até a Pasta do Projeto
+
+```cmd
+cd C:\caminho\para\translate_script
+```
+
+**Exemplo:**
+```cmd
+cd C:\Users\SeuUsuario\Desktop\translate_script
+```
+
+### Passo 3: Executar Instalação
+
+Execute o script de instalação:
 
 ```cmd
 scripts\install_windows.bat
 ```
 
-Este script irá:
-- Verificar se Python e Node.js estão instalados
-- Criar ambiente virtual Python
-- Instalar dependências Python
-- Instalar dependências do frontend
-- Configurar o projeto
+**O que acontece:**
+- ✅ Verifica Python e Node.js
+- ✅ Cria ambiente virtual Python (`venv`)
+- ✅ Instala dependências Python
+- ✅ Instala dependências do frontend (npm)
+- ✅ Configura o projeto
 
-### Passo 4: Configurar variáveis de ambiente
+⏱️ **Tempo estimado**: 2-5 minutos
 
-Crie um arquivo `.env` na raiz do projeto (ou edite se já existir):
+### Passo 4: Configurar Chave OpenAI (Opcional)
 
-**Opção 1: Usando Notepad**
+**Apenas se você for usar o método OpenAI** (Google Translate não precisa):
+
+**Opção A - Usando Notepad:**
 ```cmd
 notepad .env
 ```
 
-**Opção 2: Usando PowerShell**
+**Opção B - Usando PowerShell:**
 ```powershell
 echo OPENAI_API_KEY=sk-sua-chave-aqui > .env
 ```
 
-Adicione no arquivo:
+Adicione no arquivo `.env`:
 ```
 OPENAI_API_KEY=sk-sua-chave-aqui
 ```
 
-**Nota**: A chave OpenAI é necessária apenas se você usar o método OpenAI. O Google Translate não requer chave.
+💡 **Dica**: Se usar apenas Google Translate, pode pular este passo!
+
+---
+
+## 🚀 Como Rodar no Windows
+
+### Opção 1: Interface Web (Recomendado)
+
+#### Terminal 1 - Backend (API)
+
+1. Abra um **Prompt de Comando** ou **PowerShell**
+2. Navegue até a pasta do projeto:
+   ```cmd
+   cd C:\caminho\para\translate_script
+   ```
+3. Execute:
+   ```cmd
+   scripts\run_api.bat
+   ```
+4. Aguarde a mensagem: `Uvicorn running on http://127.0.0.1:8000`
+5. A API estará disponível em:
+   - **API**: http://localhost:8000
+   - **Documentação**: http://localhost:8000/docs
+
+#### Terminal 2 - Frontend
+
+1. Abra **outro** **Prompt de Comando** ou **PowerShell**
+2. Navegue até a pasta do projeto:
+   ```cmd
+   cd C:\caminho\para\translate_script
+   ```
+3. Execute:
+   ```cmd
+   scripts\run_frontend.bat
+   ```
+4. Aguarde a mensagem: `Local: http://localhost:3000`
+5. Abra seu navegador em: **http://localhost:3000**
+
+✅ **Pronto!** A interface web está funcionando!
+
+### Opção 2: Scripts CLI (Linha de Comando)
+
+#### Google Translate (Gratuito)
+
+```cmd
+scripts\run.bat en.json pt
+```
+
+#### OpenAI (Requer chave API)
+
+```cmd
+scripts\run_openai.bat en.json pt
+```
+
+**Parâmetros:**
+- `en.json` = arquivo JSON de entrada
+- `pt` = idioma de destino (pt, es, fr, de, etc.)
+
+---
+
+## 📝 Resumo Rápido - Windows
+
+```cmd
+REM 1. Instalar (apenas uma vez)
+scripts\install_windows.bat
+
+REM 2. Rodar API (Terminal 1)
+scripts\run_api.bat
+
+REM 3. Rodar Frontend (Terminal 2)
+scripts\run_frontend.bat
+
+REM 4. Abrir navegador
+REM http://localhost:3000
+```
 
 ---
 
