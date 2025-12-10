@@ -113,8 +113,6 @@ def estimate_translation(
     num_batches = (total_strings + batch_size - 1) // batch_size if total_strings > 0 else 0
     
     if method == "google":
-        # Google Translate: sem custo, tempo baseado em strings (mais lento, sem paralelismo real)
-        # Google Translate tem rate limits, estimamos ~0.5-1 segundo por string
         estimated_time_per_string = 0.8
         estimated_time_seconds = int(total_strings * estimated_time_per_string)
         
