@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react'
-import { Upload as UploadIcon, FileJson, Loader2, X, Save, Trash2 } from 'lucide-react'
+import { Upload as UploadIcon, FileJson, Loader2, X, Save, Trash2, FolderOpen } from 'lucide-react'
 import Dialog from './Dialog'
 import './CompareStep.css'
 
@@ -11,7 +11,7 @@ const CompareStep = ({ onCompare, loading }) => {
   const [dragActive1, setDragActive1] = useState(false)
   const [dragActive2, setDragActive2] = useState(false)
   const [file1, setFile1] = useState(null)
-  const [file2, setFile2] = useState(null)
+  const [files2, setFiles2] = useState([])
   const [savedBaseFile, setSavedBaseFile] = useState(null)
   const [usingSavedFile, setUsingSavedFile] = useState(false)
   const [dialog, setDialog] = useState({ isOpen: false, title: '', message: '', type: 'info', onConfirm: null, showCancel: false })
@@ -51,14 +51,58 @@ const CompareStep = ({ onCompare, loading }) => {
     setDragActive(false)
     
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFile(e.dataTransfer.files[0], setFile)
+      if (setFile === setFiles2) {
+        // Múltiplos arquivos para arquivo 2
+        handleMultipleFiles(Array.from(e.dataTransfer.files))
+      } else {
+        handleFile(e.dataTransfer.files[0], setFile)
+      }
     }
   }
 
   const handleFileInput = (e, setFile) => {
-    if (e.target.files && e.target.files[0]) {
-      handleFile(e.target.files[0], setFile)
+    if (e.target.files && e.target.files.length > 0) {
+      if (setFile === setFiles2) {
+        // Múltiplos arquivos para arquivo 2
+        handleMultipleFiles(Array.from(e.target.files))
+      } else {
+        handleFile(e.target.files[0], setFile)
+      }
     }
+  }
+
+  const handleMultipleFiles = (files) => {
+    const jsonFiles = files.filter(file => file.name.endsWith('.json'))
+    
+    if (jsonFiles.length === 0) {
+      setDialog({
+        isOpen: true,
+        title: 'Formato Inválido',
+        message: 'Por favor, selecione pelo menos um arquivo JSON',
+        type: 'error',
+        onConfirm: null,
+        showCancel: false
+      })
+      return
+    }
+
+    if (jsonFiles.length !== files.length) {
+      setDialog({
+        isOpen: true,
+        title: 'Arquivos Ignorados',
+        message: `${files.length - jsonFiles.length} arquivo(s) não JSON foram ignorados. Apenas arquivos JSON são aceitos.`,
+        type: 'warning',
+        onConfirm: null,
+        showCancel: false
+      })
+    }
+
+    // Adicionar novos arquivos à lista (evitar duplicatas por nome)
+    setFiles2(prev => {
+      const existingNames = new Set(prev.map(f => f.name))
+      const newFiles = jsonFiles.filter(f => !existingNames.has(f.name))
+      return [...prev, ...newFiles]
+    })
   }
 
   const handleFile = async (file, setFile) => {
@@ -91,11 +135,31 @@ const CompareStep = ({ onCompare, loading }) => {
     }
   }
 
-  const removeFile = (setFile) => {
-    setFile(null)
-    if (setFile === setFile1) {
-      setUsingSavedFile(false)
+  const removeFile = (setFile, fileToRemove = null) => {
+    if (setFile === setFiles2 && fileToRemove) {
+      // Remover arquivo específico da lista
+      setFiles2(prev => prev.filter(f => f !== fileToRemove))
+    } else {
+      setFile(null)
+      if (setFile === setFile1) {
+        setUsingSavedFile(false)
+      }
     }
+  }
+
+  const clearAllFiles2 = () => {
+    setDialog({
+      isOpen: true,
+      title: 'Confirmar Limpeza',
+      message: `Deseja remover todos os ${files2.length} arquivo(s) carregado(s)?`,
+      type: 'warning',
+      onConfirm: () => {
+        setFiles2([])
+      },
+      showCancel: true,
+      confirmText: 'Remover Todos',
+      cancelText: 'Cancelar'
+    })
   }
 
   const saveBaseFile = async () => {
@@ -174,18 +238,18 @@ const CompareStep = ({ onCompare, loading }) => {
   }
 
   const handleCompare = () => {
-    if (!file1 || !file2) {
+    if (!file1 || files2.length === 0) {
       setDialog({
         isOpen: true,
         title: 'Arquivos Necessários',
-        message: 'Por favor, faça upload de ambos os arquivos JSON',
+        message: 'Por favor, faça upload do arquivo base e pelo menos um arquivo para comparação',
         type: 'warning',
         onConfirm: null,
         showCancel: false
       })
       return
     }
-    onCompare(file1, file2)
+    onCompare(file1, files2)
   }
 
   return (
@@ -297,26 +361,65 @@ const CompareStep = ({ onCompare, loading }) => {
           </div>
         </div>
 
-        {/* Arquivo 2 */}
+        {/* Arquivo 2 - Múltiplos arquivos */}
         <div className="compare-upload-item">
           <div className="upload-item-header">
-            <h3>Arquivo 2</h3>
+            <h3>Arquivos para Comparar {files2.length > 0 && <span className="file-count-badge">{files2.length}</span>}</h3>
+            {files2.length > 0 && (
+              <button className="btn-clear-all" onClick={clearAllFiles2} title="Remover todos os arquivos">
+                <X size={16} />
+                Limpar Todos
+              </button>
+            )}
           </div>
+          
+          {files2.length > 0 && (
+            <div className="files-list-container">
+              <div className="files-list-header">
+                <span className="files-count-text">{files2.length} arquivo{files2.length !== 1 ? 's' : ''} carregado{files2.length !== 1 ? 's' : ''}</span>
+              </div>
+              <div className="files-list-scroll">
+                {files2.map((file, index) => (
+                  <div key={`${file.name}-${index}`} className="file-item-row">
+                    <div className="file-info">
+                      <FileJson size={18} />
+                      <div className="file-details">
+                        <p className="file-name">{file.name}</p>
+                        <p className="file-size">{(file.size / 1024).toFixed(2)} KB</p>
+                      </div>
+                    </div>
+                    <button
+                      className="remove-file-btn"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        removeFile(setFiles2, file)
+                      }}
+                      title="Remover arquivo"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
           <div
-            className={`upload-area ${dragActive2 ? 'drag-active' : ''} ${loading ? 'loading' : ''} ${file2 ? 'has-file' : ''}`}
+            className={`upload-area ${dragActive2 ? 'drag-active' : ''} ${loading ? 'loading' : ''} ${files2.length > 0 ? 'has-files-compact' : ''}`}
             onDragEnter={(e) => handleDrag(e, setDragActive2)}
             onDragLeave={(e) => handleDrag(e, setDragActive2)}
             onDragOver={(e) => handleDrag(e, setDragActive2)}
-            onDrop={(e) => handleDrop(e, setDragActive2, setFile2)}
-            onClick={() => !loading && !file2 && file2InputRef.current?.click()}
+            onDrop={(e) => handleDrop(e, setDragActive2, setFiles2)}
+            onClick={() => !loading && file2InputRef.current?.click()}
           >
             <input
               ref={file2InputRef}
               type="file"
               accept=".json"
-              onChange={(e) => handleFileInput(e, setFile2)}
+              multiple
+              onChange={(e) => handleFileInput(e, setFiles2)}
               style={{ display: 'none' }}
-              disabled={loading || !!file2}
+              disabled={loading}
             />
             
             {loading ? (
@@ -324,30 +427,20 @@ const CompareStep = ({ onCompare, loading }) => {
                 <Loader2 size={32} className="spinner" />
                 <p>Processando...</p>
               </div>
-            ) : file2 ? (
-              <div className="file-info">
-                <FileJson size={32} />
-                <div className="file-details">
-                  <p className="file-name">{file2.name}</p>
-                  <p className="file-size">{(file2.size / 1024).toFixed(2)} KB</p>
-                </div>
-                <button
-                  className="remove-file-btn"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    removeFile(setFile2)
-                  }}
-                >
-                  <X size={20} />
-                </button>
+            ) : files2.length > 0 ? (
+              <div className="upload-area-compact">
+                <FolderOpen size={24} />
+                <p className="upload-text-compact">
+                  <strong>Clique para adicionar mais arquivos</strong> ou arraste aqui
+                </p>
               </div>
             ) : (
               <>
-                <UploadIcon size={48} />
+                <FolderOpen size={48} />
                 <p className="upload-text">
-                  <strong>Clique para selecionar</strong> ou arraste o arquivo aqui
+                  <strong>Clique para selecionar</strong> ou arraste os arquivos aqui
                 </p>
-                <p className="upload-hint">Apenas arquivos .json são aceitos</p>
+                <p className="upload-hint">Você pode selecionar múltiplos arquivos .json</p>
               </>
             )}
           </div>
@@ -358,9 +451,9 @@ const CompareStep = ({ onCompare, loading }) => {
         <button
           className="btn btn-primary"
           onClick={handleCompare}
-          disabled={!file1 || !file2 || loading}
+          disabled={!file1 || files2.length === 0 || loading}
         >
-          Comparar Arquivos
+          {files2.length > 1 ? `Comparar ${files2.length} Arquivos` : 'Comparar Arquivos'}
         </button>
       </div>
 

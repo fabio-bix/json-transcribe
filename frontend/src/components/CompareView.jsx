@@ -1,9 +1,20 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
-import { ArrowLeft, FileJson, Download, Filter } from 'lucide-react'
+import { ArrowLeft, FileJson, Download, Filter, List, Loader2 } from 'lucide-react'
 import { compareJSONs, formatJSONForDisplay } from '../utils/jsonCompare'
 import './CompareView.css'
 
-const CompareView = ({ file1Data, file2Data, file1Name, file2Name, onBack }) => {
+const CompareView = ({ 
+  file1Data, 
+  file2Data, 
+  file1Name, 
+  file2Name, 
+  currentIndex = 0, 
+  totalFiles = 1, 
+  fileNames = [], 
+  loadingFile = false,
+  onSelectFile = () => {}, 
+  onBack 
+}) => {
   const [syncScroll, setSyncScroll] = useState(true)
   const [filter, setFilter] = useState('all') // 'all', 'added', 'removed', 'modified', 'unchanged'
   const leftPanelRef = useRef(null)
@@ -157,6 +168,8 @@ const CompareView = ({ file1Data, file2Data, file1Name, file2Name, onBack }) => 
     URL.revokeObjectURL(url)
   }
 
+  const hasMultipleFiles = totalFiles > 1
+
   return (
     <div className="compare-view">
       <div className="compare-header-bar">
@@ -192,6 +205,39 @@ const CompareView = ({ file1Data, file2Data, file1Name, file2Name, onBack }) => 
           </button>
         </div>
       </div>
+
+      {hasMultipleFiles && (
+        <div className="file-navigation">
+          <div className="file-navigation-info">
+            <List size={18} />
+            <span>Arquivo {currentIndex + 1} de {totalFiles}</span>
+          </div>
+          
+          <div className="file-navigation-controls">
+            <div className="file-selector">
+              <select
+                value={currentIndex}
+                onChange={(e) => onSelectFile(parseInt(e.target.value))}
+                className="file-select"
+                disabled={loadingFile}
+              >
+                {fileNames.map((name, index) => (
+                  <option key={index} value={index}>
+                    {index + 1}. {name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {loadingFile && (
+        <div className="file-loading-indicator">
+          <Loader2 size={20} className="spinner" />
+          <span>Carregando arquivo...</span>
+        </div>
+      )}
 
       {stats && (
         <>

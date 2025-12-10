@@ -166,6 +166,111 @@
   color: var(--primary);
 }
 
+/* Indicador de carregamento */
+.file-loading-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  background: rgba(99, 102, 241, 0.1);
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  font-size: 0.875rem;
+}
+
+.file-loading-indicator .spinner {
+  animation: spin 1s linear infinite;
+  color: var(--primary);
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Navegação de arquivos */
+.file-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  background: var(--bg-card);
+  border-bottom: 2px solid var(--primary);
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.file-navigation-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.file-navigation-info svg {
+  color: var(--primary);
+}
+
+.file-navigation-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 1;
+}
+
+.file-selector {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+}
+
+.file-select {
+  width: 100%;
+  padding: 0.75rem 2.5rem 0.75rem 1rem;
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  color: var(--text);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236366f1' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 12px;
+}
+
+.file-select:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.file-select:hover {
+  border-color: var(--primary);
+  background: var(--bg-card);
+}
+
+.file-select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.file-select option {
+  background: var(--bg-card);
+  color: var(--text);
+  padding: 0.5rem;
+}
+
 .no-results {
   padding: 3rem 1rem;
   text-align: center;
@@ -389,6 +494,20 @@
   .stat-item {
     justify-content: space-between;
   }
+
+  .file-navigation {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .file-navigation-controls {
+    width: 100%;
+  }
+
+  .file-selector {
+    max-width: 100%;
+  }
 }
+
 
 

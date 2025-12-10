@@ -12,6 +12,7 @@ import FileViewer from './components/FileViewer'
 import CompareStep from './components/CompareStep'
 import CompareView from './components/CompareView'
 import { uploadJSON, estimateTranslation, startTranslation, getJobStatus, getJobResult, saveJobResult } from './services/api'
+import { saveFileToCache, loadFileFromCache, removeFileFromCache, clearAllCache } from './utils/fileCache'
 
 function App() {
   const [page, setPage] = useState('translate')
@@ -35,11 +36,14 @@ function App() {
   const [viewingFilename, setViewingFilename] = useState(null)
   // Estados para comparação
   const [compareFile1, setCompareFile1] = useState(null)
-  const [compareFile2, setCompareFile2] = useState(null)
+  const [compareFiles2, setCompareFiles2] = useState([])
   const [compareData1, setCompareData1] = useState(null)
-  const [compareData2, setCompareData2] = useState(null)
   const [compareFile1Name, setCompareFile1Name] = useState(null)
-  const [compareFile2Name, setCompareFile2Name] = useState(null)
+  const [compareFile2Names, setCompareFile2Names] = useState([])
+  const [currentFileIndex, setCurrentFileIndex] = useState(0)
+  const [currentFile2Data, setCurrentFile2Data] = useState(null) // Apenas o arquivo atual em memória
+  const [loadingFile, setLoadingFile] = useState(false)
+  const [fileCacheIds, setFileCacheIds] = useState([]) // IDs dos arquivos no cache
 
   const handleUpload = async (file) => {
     setLoading(true)
@@ -161,20 +165,46 @@ function App() {
     setViewingFilename(null)
   }
 
-  const handleCompare = async (file1, file2) => {
+  const handleCompare = async (file1, files2) => {
     setLoading(true)
     setError(null)
     try {
-      // Fazer upload e parse dos dois arquivos
-      const response1 = await uploadJSON(file1)
-      const response2 = await uploadJSON(file2)
+      // Limpar cache anterior se existir
+      await clearAllCache()
       
+      // Fazer upload e parse do arquivo base
+      const response1 = await uploadJSON(file1)
       setCompareData1(response1.data)
-      setCompareData2(response2.data)
       setCompareFile1Name(response1.filename)
-      setCompareFile2Name(response2.filename)
       setCompareFile1(file1)
-      setCompareFile2(file2)
+      
+      // Processar múltiplos arquivos e salvar no cache
+      const filesArray = Array.isArray(files2) ? files2 : [files2]
+      const namesList = []
+      const cacheIds = []
+      
+      for (let i = 0; i < filesArray.length; i++) {
+        const file = filesArray[i]
+        const response = await uploadJSON(file)
+        const fileId = `file2_${Date.now()}_${i}_${Math.random().toString(36).substr(2, 9)}`
+        
+        // Salvar no cache
+        await saveFileToCache(fileId, response.data, response.filename)
+        
+        namesList.push(response.filename)
+        cacheIds.push(fileId)
+      }
+      
+      setCompareFile2Names(namesList)
+      setFileCacheIds(cacheIds)
+      setCompareFiles2(filesArray)
+      setCurrentFileIndex(0)
+      
+      // Carregar apenas o primeiro arquivo em memória
+      if (cacheIds.length > 0) {
+        const firstFileData = await loadFileFromCache(cacheIds[0])
+        setCurrentFile2Data(firstFileData)
+      }
     } catch (err) {
       setError(err.response?.data?.detail || err.message || 'Erro ao processar arquivos')
     } finally {
@@ -182,14 +212,60 @@ function App() {
     }
   }
 
-  const handleBackFromCompare = () => {
+  const handleBackFromCompare = async () => {
+    // Limpar cache ao sair
+    await clearAllCache()
+    
     setCompareFile1(null)
-    setCompareFile2(null)
+    setCompareFiles2([])
     setCompareData1(null)
-    setCompareData2(null)
-    setCompareFile1Name(null)
-    setCompareFile2Name(null)
+    setCompareFile2Names([])
+    setCurrentFileIndex(0)
+    setCurrentFile2Data(null)
+    setFileCacheIds([])
     setError(null)
+  }
+
+  const loadFileAtIndex = async (index) => {
+    if (index < 0 || index >= fileCacheIds.length) return
+    
+    setLoadingFile(true)
+    try {
+      const fileId = fileCacheIds[index]
+      const fileData = await loadFileFromCache(fileId)
+      setCurrentFile2Data(fileData)
+    } catch (err) {
+      console.error('Erro ao carregar arquivo do cache:', err)
+      setError('Erro ao carregar arquivo do cache')
+    } finally {
+      setLoadingFile(false)
+    }
+  }
+
+  const handleNextFile = async () => {
+    if (currentFileIndex < fileCacheIds.length - 1) {
+      const newIndex = currentFileIndex + 1
+      setCurrentFileIndex(newIndex)
+      await loadFileAtIndex(newIndex)
+    }
+  }
+
+  const handlePreviousFile = async () => {
+    if (currentFileIndex > 0) {
+      const newIndex = currentFileIndex - 1
+      setCurrentFileIndex(newIndex)
+      await loadFileAtIndex(newIndex)
+    }
+  }
+
+  const handleSelectFile = async (index) => {
+    // Prevenir múltiplas chamadas simultâneas
+    if (loadingFile) return
+    
+    if (index >= 0 && index < fileCacheIds.length && index !== currentFileIndex) {
+      setCurrentFileIndex(index)
+      await loadFileAtIndex(index)
+    }
   }
 
   return (
@@ -256,12 +332,17 @@ function App() {
                 </div>
               )}
 
-              {compareData1 && compareData2 ? (
+              {compareData1 && currentFile2Data && fileCacheIds.length > 0 ? (
                 <CompareView
                   file1Data={compareData1}
-                  file2Data={compareData2}
+                  file2Data={currentFile2Data}
                   file1Name={compareFile1Name}
-                  file2Name={compareFile2Name}
+                  file2Name={compareFile2Names[currentFileIndex]}
+                  currentIndex={currentFileIndex}
+                  totalFiles={fileCacheIds.length}
+                  fileNames={compareFile2Names}
+                  loadingFile={loadingFile}
+                  onSelectFile={handleSelectFile}
                   onBack={handleBackFromCompare}
                 />
               ) : (
